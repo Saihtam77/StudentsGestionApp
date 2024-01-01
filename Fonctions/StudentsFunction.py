@@ -1,16 +1,16 @@
 from Class.Student import Student
+from pymongo.errors import PyMongoError
 
-from faker import Faker
+
 from datetime import date
-fake = Faker()
+""" database insertion functions """
 
-
-def insert_studentToDatabase(db,firstName,lastName,dateOfBirth,address,phoneNumber,age,grade,className,review):
+def add_student(db, firstName, lastName, dateOfBirth, address, phone_number, age, grade, className, review):
     try:
-        newStudent= Student(firstName,lastName,dateOfBirth,address,phoneNumber,age,grade,className,review,0)
-        
+    
+        newStudent = Student(firstName, lastName, dateOfBirth, address, phone_number, age, grade, className, review, 0)
         student = {
-            "fistName": newStudent.getFirstName(),
+            "firstName": newStudent.getFirstName(),
             "lastName": newStudent.getLastName(),
             "dateOfBirth": newStudent.getDateOfBirth(),
             "age": newStudent.getAge(),
@@ -23,35 +23,140 @@ def insert_studentToDatabase(db,firstName,lastName,dateOfBirth,address,phoneNumb
             "avarageRatings": newStudent.getAvarageRatings(),
             "OverallRating": newStudent.getOverallRating(),
         }
+        
         studentsCollection = db["Students"]
         studentsCollection.insert_one(student)
         print("Student added")
-    
+
     except Exception as e:
-        print("Erreur: ",e)
-        
-def add_student(db):
-    if db["Students"].count_documents({}) == 0:
-            for i in range(10):
-                insert_studentToDatabase(
-                    db,
-                    fake.first_name(),
-                    fake.last_name(),
-                    date.isoformat(fake.date_of_birth()),
-                    fake.address(),
-                    fake.phone_number(),
-                    fake.random_int(min=6, max=25),
-                    fake.random_element(["CP", "CE1", "CE2", "CM1", "CM2", "6e", "5e", "4e", "3e", "2nde", "1ere", "Tle"]),
-                    fake.random_element(
-                        ["CP1","CP2","CP3","CE1_A","CE1_B","CE1_C","CE2_A","CE2_B","CE2_C","CM1_A","CM1_B","CM1_C","CM2_A","CM2_B","CM2_C","6e_A","6e_B","6e_C","5e_A","5e_B","5e_C","4e_A","4e_B","4e_C","3e_A","3e_B","3e_C","2nde_A","2nde_B","2nde_C","1ere_A","1ere_B","1ere_C","Tle_A","Tle_B","Tle_C"]
-                        ),
-                    fake.text(), 
+        print("Erreur: ", e)   
+
+
+""" info functions """
+
+
+def getInfo_student(db, lastName, firstName):
+    try:
+        studentsCollection = db["Students"]
+        student = studentsCollection.find_one(
+            {"lastName": lastName, "firstName": firstName}
+        )
+        if student:
+            print(student)
+        else:
+            print("Student not found")
+    except Exception as e:
+        print("Erreur: ", e)
+
+
+""" Notes functions """
+
+
+def calculate_avarageRatings(db, firstName, lastName, subject):
+    try:
+        studentsCollection = db["Students"]
+        student = studentsCollection.find_one(
+            {"lastName": lastName, "firstName": firstName}
+        )
+    except PyMongoError as e:
+        print("Error occurred while fetching student", e)
+        return False
+
+    if student:
+        notes = student["notes"]
+        avarageRatings = student["avarageRatings"]
+        sum = 0
+        if subject in notes:
+            for note in notes[subject]:
+                sum += note
+                
+            avarageRatings[subject] = sum / len(notes[subject])
+            print(avarageRatings[subject])
+            
+            try:
+                studentsCollection.update_one(
+                    {"lastName": lastName, "firstName": firstName},
+                    {"$set": {"avarageRatings": avarageRatings}},
                 )
+                print("AvarageRatings updated")
+                return True
+            except PyMongoError as e:
+                print("Error occurred while updating student: ", e)
+                return False
+        else:
+            print("Subject" + subject + " not found")
+            return False
     else:
-        print("Students already full")
+        print("Student " + lastName + " " + firstName + " not found")
+        return False
+
+
+def calculate_OverallRating(db, firstName, lastName):
+    # try find the student
+    try:
+        studentsCollection = db["Students"]
+        student = studentsCollection.find_one(
+            {"lastName": lastName, "firstName": firstName}
+        )
+    except  PyMongoError as e:
+        print("Error occurred while fetching student", e)
+        return False
+
+    # if student exists in the database then update it
+    if student:
+        avarageRatings = student["avarageRatings"]
+        overallRating = student["OverallRating"]
+        sum = 0
         
+        for subject in avarageRatings:
+            sum += avarageRatings[subject]
+            overallRating = sum / len(avarageRatings)
+        print(overallRating)
+        
+        # ajoute dans la base de donner
+        try:
+            studentsCollection.update_one(
+                {"lastName": lastName, "firstName": firstName},
+                {"$set": {"avarageRatings": avarageRatings, "OverallRating": overallRating}},
+            )
+            print("OverallRating updated")
+            return True
+        except PyMongoError as e:
+            print("Error occurred while updating student: ", e)
+            return False
+    else:
+        print("Student " + lastName + " " + firstName + " not found")
+        return False
+        
+        
+def add_Note(db, first_name, last_name, subject, note):
+    try:
+        studentsCollection = db["Students"]
 
+        student = studentsCollection.find_one({"lastName": last_name, "firstName": first_name})
+    except PyMongoError as e:
+        print("Error occurred while fetching student: ", e)
+        return False
 
-
-
-
+    if student:
+        notes = student["notes"]
+        if subject in notes:
+            notes[subject].append(note)
+            try:
+                studentsCollection.update_one(
+                    {"lastName": last_name, "firstName": first_name},
+                    {"$set": {"notes": notes}},
+                )
+                print("Note added")
+                calculate_avarageRatings(db, first_name, last_name, subject)
+                # calculate_OverallRating(db, first_name, last_name)
+                return True
+            except PyMongoError as e:
+                print("Error occurred while updating student: ", e)
+                return False
+        else:
+            print("Subject not found")
+            return False
+    else:
+        print("Student not found")
+        return False

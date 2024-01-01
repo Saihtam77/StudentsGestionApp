@@ -75,31 +75,7 @@ class Student(Person):
         self.review = review
         
     
-    """ Methods """
     
-    def calculateAvarageRatings(self, subject):
-        sum = 0
-        for note in self.notes[subject]:
-            sum += note
-        self.avarageRatings[subject] = sum / len(self.notes[subject])
-    
-    def caculateOverallRating(self):
-        sum = 0
-        for subject in self.avarageRatings:
-            sum += self.avarageRatings[subject]
-        self.OverallRating = sum / len(self.avarageRatings)
-    
-        
-    def addNotes(self, subject, note):
-        self.notes[subject].append(note)
-        self.calculateAvarageRatings(subject)
-        self.caculateOverallRating()
-        
-        
-    """ def DeleteNotes(self, subject, note):
-        self.notes[subject].remove(note)
-        self.calculateAvarageRatings(subject) 
-        self.caculateOverallRating() """
         
         
         

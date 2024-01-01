@@ -1,9 +1,15 @@
 class Classes:
     
     """ Constructor for the class Classes """
-    def __init__(self, name, students):
+    def __init__(self, name):
         self.name = name
-        self.students = students
+        self.students = [] # Liste pour stocker les instances de Students
         
-    """ attribute """
+    
+    """ Getters """
+    def getName(self):
+        return self.name
+    
+    def getStudents(self):
+        return self.students
            
