@@ -1,14 +1,36 @@
+from commons import *
+
 from Class.Student import Student
-from pymongo.errors import PyMongoError
 
+from Database.connection import db,PyMongoError
 
-from datetime import date
+from Fonctions.Display.StudentsDisplay import refresh_listbox
+
 """ database insertion functions """
+def add_student():
+    
+    fields = [
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "address",
+        "phone_number",
+        "age",
+        "grade",
+        "className",
+        "review",
+    ]
+    entries = {}
 
-def add_student(db, firstName, lastName, dateOfBirth, address, phone_number, age, grade, className, review):
+    for field in fields:
+        label = tk.Label(root, text=field)
+        label.pack()
+        entries[field] = tk.Entry(root)
+        entries[field].pack()
+    
     try:
     
-        newStudent = Student(firstName, lastName, dateOfBirth, address, phone_number, age, grade, className, review, 0)
+        newStudent = Student(entries["firstName"].get(), entries["lastName"].get(), entries["dateOfBirth"].get(), entries["address"].get(), entries["phone_number"].get(), entries["age"].get(), entries["grade"].get(), entries["className"].get(), entries["review"].get())
         student = {
             "firstName": newStudent.getFirstName(),
             "lastName": newStudent.getLastName(),
@@ -27,40 +49,15 @@ def add_student(db, firstName, lastName, dateOfBirth, address, phone_number, age
         studentsCollection = db["Students"]
         studentsCollection.insert_one(student)
         print("Student added")
+        refresh_listbox()
+        return True
 
-    except Exception as e:
-        print("Erreur: ", e)   
+    except PyMongoError as e:    
+        print("Error occurred while adding student: ", e)
+        return False 
 
-
-""" info functions """
-
-
-def getInfo_student(db, lastName, firstName):
-    try:
-        studentsCollection = db["Students"]
-        student = studentsCollection.find_one(
-            {"lastName": lastName, "firstName": firstName}
-        )
-        if student:
-            print(student)
-        else:
-            print("Student not found")
-    except Exception as e:
-        print("Erreur: ", e)
-
-def getAll_students(db):
-    try:
-        studentsCollection = db["Students"]
-        students = studentsCollection.find()
-        return students
-    except Exception as e:
-        print("Erreur: ", e)
-        return False
-    
 """ Notes functions """
-
-
-def calculate_avarageRatings(db, firstName, lastName, subject):
+def calculate_avarageRatings(firstName, lastName, subject):
     try:
         studentsCollection = db["Students"]
         student = studentsCollection.find_one(
@@ -99,7 +96,7 @@ def calculate_avarageRatings(db, firstName, lastName, subject):
         return False
 
 
-def calculate_OverallRating(db, firstName, lastName):
+def calculate_OverallRating(firstName, lastName):
     # try find the student
     try:
         studentsCollection = db["Students"]
@@ -137,7 +134,7 @@ def calculate_OverallRating(db, firstName, lastName):
         return False
         
         
-def add_Note(db, first_name, last_name, subject, note):
+def add_Note(first_name, last_name, subject, note):
     try:
         studentsCollection = db["Students"]
 
@@ -168,3 +165,4 @@ def add_Note(db, first_name, last_name, subject, note):
     else:
         print("Student not found")
         return False
+ 

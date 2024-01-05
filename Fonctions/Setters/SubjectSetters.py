@@ -1,4 +1,4 @@
-from pymongo import MongoClient, errors as PyMongoError
+from Database.connection import db, PyMongoError
 from Class.Subject import Subject
 
 def addSubject(db, name, coefficient):
@@ -22,4 +22,3 @@ def addSubject(db, name, coefficient):
     except PyMongoError as e:
         print("Error occurred while inserting subject: ", e)
         return False    
-        

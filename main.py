@@ -1,6 +1,6 @@
-from Interface.display_main import start
+from Interface.display_main import startApp
 
-start()
+startApp()
 
 
 

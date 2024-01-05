@@ -1,5 +1,6 @@
-from Interface.display_main import *
+from commons import *
+from Fonctions.Setters.StudentsSetters import *
 
-def displayButtons():
+def addStudent_btn():
     add_button = tk.Button(root, text="Add Student", command=add_student)
     add_button.pack()

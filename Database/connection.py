@@ -1,4 +1,6 @@
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
+
 
 def connection():
     try:
@@ -8,7 +10,10 @@ def connection():
         print("Base de donnéer dispo: ",db_list)
         database = client['StudentsGestionAPP']
         return database
-    except Exception as e:
-        print("Erreur: ",e)
+    except PyMongoError as e:
+        print("Could not connect to MongoDB: %s" % e)
+        return False
+
+db = connection()
     
     

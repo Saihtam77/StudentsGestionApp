@@ -1,12 +1,11 @@
 from faker import Faker
 from datetime import date
 from Class.Student import Student
-from Fonctions.StudentsFunction import *
-from pymongo.errors import PyMongoError
+from Fonctions.StudentsFunctions import *
+from Database.connection import db, PyMongoError
 
 fake = Faker()
 def insert_studentToDatabase(
-    db,
     firstName,
     lastName,
     dateOfBirth,
@@ -52,7 +51,7 @@ def insert_studentToDatabase(
     except Exception as e:
         print("Erreur: ", e)
 
-def add_studentFactory(db):
+def add_studentFactory():
     if db["Students"].count_documents({}) == 0:
         for i in range(10):
             insert_studentToDatabase(
@@ -124,7 +123,7 @@ def add_studentFactory(db):
     else:
         print("Students already full")
 
-def add_NoteFactory(db, first_name, last_name):
+def add_NoteFactory(first_name, last_name):
     
     try:
         studentsCollection = db["Students"]

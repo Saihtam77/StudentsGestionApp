@@ -1,15 +1,7 @@
-from Interface.common import *
-from Database.connection import connection
-from Interface.interface_function.refresh_listbox import refresh_listbox
+from commons import *
+from Fonctions.Display.StudentsDisplay import *
 
-
-db = connection()
-root = tk.Tk()
-root.title("StudentsGestionAPP")  # Set the title of the window
-root.geometry("300x200")  # Set initial size of the window: 300x200 pixels
-root.resizable(True, True)  # Make the window resizable in both directions
-
-def start():
+def startApp():
     
-    refresh_listbox(root, db) # Display the listbox with all the students
+    listboxStudents() # Display the listbox with all the students
     root.mainloop()
