@@ -48,7 +48,15 @@ def getInfo_student(db, lastName, firstName):
     except Exception as e:
         print("Erreur: ", e)
 
-
+def getAll_students(db):
+    try:
+        studentsCollection = db["Students"]
+        students = studentsCollection.find()
+        return students
+    except Exception as e:
+        print("Erreur: ", e)
+        return False
+    
 """ Notes functions """
 
 
