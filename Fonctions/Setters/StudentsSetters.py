@@ -1,60 +1,87 @@
-from commons import *
-
+from Class.Interface import *
 from Class.Student import Student
+from Fonctions.validation_input import *
 
 from Database.connection import db,PyMongoError
 
 from Fonctions.Display.StudentsDisplay import refresh_listbox
 
+
 """ database insertion functions """
+
+    
+fields = [
+    "firstName",
+    "lastName",
+    "dateOfBirth",
+    "address",
+    "phone_number",
+    "age",
+    "grade",
+    "className",
+    "review",
+]
+entries = {}
+
+for field in fields:
+    label = tk.Label(root_window.frameRight, text=field)
+    label.pack()
+    entries[field] = tk.Entry(root_window.frameRight)
+    entries[field].pack(padx=10, pady=10)
+    
+
+def clean_entries():
+        for field in fields:
+            entries[field].delete(0, tk.END)
+   
+def validation_Student():
+    if not validate_input_string(["firstName", "lastName"], entries):
+        return False
+    if not validate_input_date(["dateOfBirth"], entries):
+        return False
+    if not validate_input_digit(["age", "grade"], entries):
+        return False
+    if not validate_input_string(["className"], entries):
+        return False
+    if not validate_input_digit(["phone_number"], entries):
+        return False
+    if not validate_input_string(["review"], entries):
+        return False
+    return True
+
+
 def add_student():
     
-    fields = [
-        "firstName",
-        "lastName",
-        "dateOfBirth",
-        "address",
-        "phone_number",
-        "age",
-        "grade",
-        "className",
-        "review",
-    ]
-    entries = {}
+    if validation_Student():        
+        try:
+            newStudent = Student(entries["firstName"].get(), entries["lastName"].get(), entries["dateOfBirth"].get(), entries["address"].get(), entries["phone_number"].get(), entries["age"].get(), entries["grade"].get(), entries["className"].get(), entries["review"].get(), 0)
+            student = {
+                "firstName": newStudent.getFirstName(),
+                "lastName": newStudent.getLastName(),
+                "dateOfBirth": newStudent.getDateOfBirth(),
+                "age": newStudent.getAge(),
+                "address": newStudent.getAddress(),
+                "phoneNumber": newStudent.getPhoneNumber(),
+                "grade": newStudent.getGrade(),
+                "className": newStudent.getClassName(),
+                "review": newStudent.getReview(),
+                "notes": newStudent.getNotes(),
+                "avarageRatings": newStudent.getAvarageRatings(),
+                "OverallRating": newStudent.getOverallRating(),
+            }
+            
+            studentsCollection = db["Students"]
+            studentsCollection.insert_one(student)
+            print("Student added")
+            refresh_listbox()
+            clean_entries()
+            return True
 
-    for field in fields:
-        label = tk.Label(root, text=field)
-        label.pack()
-        entries[field] = tk.Entry(root)
-        entries[field].pack()
-    
-    try:
-    
-        newStudent = Student(entries["firstName"].get(), entries["lastName"].get(), entries["dateOfBirth"].get(), entries["address"].get(), entries["phone_number"].get(), entries["age"].get(), entries["grade"].get(), entries["className"].get(), entries["review"].get())
-        student = {
-            "firstName": newStudent.getFirstName(),
-            "lastName": newStudent.getLastName(),
-            "dateOfBirth": newStudent.getDateOfBirth(),
-            "age": newStudent.getAge(),
-            "address": newStudent.getAddress(),
-            "phoneNumber": newStudent.getPhoneNumber(),
-            "grade": newStudent.getGrade(),
-            "className": newStudent.getClassName(),
-            "review": newStudent.getReview(),
-            "notes": newStudent.getNotes(),
-            "avarageRatings": newStudent.getAvarageRatings(),
-            "OverallRating": newStudent.getOverallRating(),
-        }
-        
-        studentsCollection = db["Students"]
-        studentsCollection.insert_one(student)
-        print("Student added")
-        refresh_listbox()
-        return True
+        except PyMongoError as e:    
+            print("Error occurred while adding student: ", e)
+            return False 
 
-    except PyMongoError as e:    
-        print("Error occurred while adding student: ", e)
-        return False 
+
 
 """ Notes functions """
 def calculate_avarageRatings(firstName, lastName, subject):

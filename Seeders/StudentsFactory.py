@@ -1,7 +1,6 @@
 from faker import Faker
 from datetime import date
 from Class.Student import Student
-from Fonctions.StudentsFunctions import *
 from Database.connection import db, PyMongoError
 
 fake = Faker()
